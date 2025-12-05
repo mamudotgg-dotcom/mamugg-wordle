@@ -15,22 +15,27 @@
     </style>
 </head>
 <body>
-    <div class="watermark" v-if="room === 'public'">mamu.gg</div>
-    
-    <div id="app" class="container" style="padding:20px; text-align:center;">
-        <h1 style="font-size:3rem; background: linear-gradient(to right,#8b5cf6,#3b82f6); -webkit-background-clip: text; color: transparent;">
-            MaMu.GG Wordle
-        </h1>
-        <h2 style="color:#fbbf24;">Room: {{ room }}</h2>
-        <p v-if="room !== 'public'" style="color:#10b981; font-weight:bold;">✓ Private Room Active – Score tak campur!</p>
-        <p>Jalankan Tikfinity → teka dalam live → score masuk sini automatik</p>
-        
-        <div style="margin:30px auto; max-width:600px;">
-            <h3>Testing leaderboard (room {{ room }})</h3>
-            <ol style="background:rgba(255,255,255,0.1); padding:20px; border-radius:12px;">
+    <div class="watermark" v-if="room === 'public' || !room">mamu.gg</div>
+    <div id="app">
+        <div class="container" style="padding:20px; text-align:center;">
+            <h1 style="font-size:3rem; background: linear-gradient(to right,#8b5cf6,#3b82f6); -webkit-background-clip: text; color: transparent;">
+                MaMu.GG Wordle • {{ room || 'PUBLIC' }}
+            </h1>
+            <p v-if="room && room !== 'public'" style="color:#10b981; font-weight:bold; font-size:1.3rem;">
+                Private Room Active – Score tak campur!
+            </p>
+            <p style="font-size:1.1rem; margin:20px 0;">
+                Jalankan Tikfinity → teka dalam live → score masuk automatik
+            </p>
+            <button @click="addTestScore" style="padding:12px 24px; background:#8b5cf6; color:white; border:none; border-radius:12px; font-size:1rem; cursor:pointer;">
+                Test Tambah Score ({{ room || 'public' }})
+            </button>
+            <h3 style="margin-top:30px; color:#fbbf24;">Leaderboard {{ room || 'Public' }}</h3>
+            <ol style="background:rgba(255,255,255,0.1); padding:20px; border-radius:12px; max-width:500px; margin:20px auto;">
                 <li v-for="(s, i) in leaderboard" :key="i" style="margin:10px 0; font-size:1.2rem;">
-                    #{{ i+1 }} {{ s.nickname }} → {{ s.points }} pts
+                    #{{ i+1 }} {{ s.nickname || 'Anon' }} → {{ s.points }} pts
                 </li>
+                <li v-if="leaderboard.length === 0">Belum ada score</li>
             </ol>
         </div>
     </div>
@@ -40,18 +45,15 @@
         const ROOM = urlParams.get('room') || 'public';
 
         const supabase = Supabase.createClient(
-            import.meta.env.VITE_SUPABASE_URL,
-            import.meta.env.VITE_SUPABASE_ANON_KEY
+            import.meta.env.VITE_SUPABASE_URL || 'https://ixqepwpsjgnzqthhxaqo.supabase.co',
+            import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4cWVwd3BzamduenF0aGh4YXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2Nzc2MDAsImV4cCI6MjA1MjI1MzYwMH0.qs5r4Z9b9kN9x9tF8z8c8r7v8w8x8y8z8A8B8C8D8E'
         );
 
         createApp({
-            data() {
-                return { room: ROOM, leaderboard: [] }
-            },
+            data() { return { room: ROOM, leaderboard: [] } },
             async mounted() {
                 await this.loadScores();
-                // Auto refresh setiap 5 saat
-                setInterval(() => this.loadScores(), 5000);
+                setInterval(this.loadScores, 8000);
             },
             methods: {
                 async loadScores() {
@@ -63,13 +65,16 @@
                     this.leaderboard = data || [];
                 },
                 async addTestScore() {
-                    await supabase.from('wordle_scores').insert({
-                        room: this.room,
-                        uniqueId: 'test'+Date.now(),
-                        nickname: 'Tester_'+this.room,
-                        points: Math.floor(Math.random()*10)
-                    });
-                    this.loadScores();
+                    const nick = prompt("Nama tester:", "Tester"+Date.now().toString().slice(-4));
+                    if (nick) {
+                        await supabase.from('wordle_scores').insert({
+                            room: this.room,
+                            uniqueId: 'test_'+Date.now(),
+                            nickname: nick,
+                            points: Math.floor(Math.random()*15)+1
+                        });
+                        await this.loadScores();
+                    }
                 }
             }
         }).mount('#app');
