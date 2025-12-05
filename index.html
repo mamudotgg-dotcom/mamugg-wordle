@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaMu.GG Wordle • TikTok Live</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%); color: #e2e8f0; min-height: 100vh; margin:0; }
+        .watermark { position: fixed; bottom: 15px; right: 15px; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 12px; font-size: 14px; color: #fbbf24; z-index: 999; }
+    </style>
+</head>
+<body>
+    <div class="watermark" v-if="room === 'public'">mamu.gg</div>
+    
+    <div id="app" class="container" style="padding:20px; text-align:center;">
+        <h1 style="font-size:3rem; background: linear-gradient(to right,#8b5cf6,#3b82f6); -webkit-background-clip: text; color: transparent;">
+            MaMu.GG Wordle
+        </h1>
+        <h2 style="color:#fbbf24;">Room: {{ room }}</h2>
+        <p v-if="room !== 'public'" style="color:#10b981; font-weight:bold;">✓ Private Room Active – Score tak campur!</p>
+        <p>Jalankan Tikfinity → teka dalam live → score masuk sini automatik</p>
+        
+        <div style="margin:30px auto; max-width:600px;">
+            <h3>Testing leaderboard (room {{ room }})</h3>
+            <ol style="background:rgba(255,255,255,0.1); padding:20px; border-radius:12px;">
+                <li v-for="(s, i) in leaderboard" :key="i" style="margin:10px 0; font-size:1.2rem;">
+                    #{{ i+1 }} {{ s.nickname }} → {{ s.points }} pts
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const ROOM = urlParams.get('room') || 'public';
+
+        const supabase = Supabase.createClient(
+            import.meta.env.VITE_SUPABASE_URL,
+            import.meta.env.VITE_SUPABASE_ANON_KEY
+        );
+
+        createApp({
+            data() {
+                return { room: ROOM, leaderboard: [] }
+            },
+            async mounted() {
+                await this.loadScores();
+                // Auto refresh setiap 5 saat
+                setInterval(() => this.loadScores(), 5000);
+            },
+            methods: {
+                async loadScores() {
+                    const { data } = await supabase
+                        .from('wordle_scores')
+                        .select('*')
+                        .eq('room', this.room)
+                        .order('points', { ascending: false });
+                    this.leaderboard = data || [];
+                },
+                async addTestScore() {
+                    await supabase.from('wordle_scores').insert({
+                        room: this.room,
+                        uniqueId: 'test'+Date.now(),
+                        nickname: 'Tester_'+this.room,
+                        points: Math.floor(Math.random()*10)
+                    });
+                    this.loadScores();
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
