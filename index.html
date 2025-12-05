@@ -57,31 +57,92 @@
             user-select: none;
         }
 
-        .scroll-wrapper { display: flex; height: 100%; align-items: center; }
-        .scroll-content { display: flex; gap: 70px; padding-left: 100vw; animation: scrollLeft 58s linear infinite; white-space: nowrap; }
-        .scroll-item { display: flex; align-items: center; flex-shrink: 0; }
+        .scroll-wrapper {
+            display: flex;
+            height: 100%;
+            align-items: center;
+        }
+
+        .scroll-content {
+            display: flex;
+            gap: 70px;
+            padding-left: 100vw;
+            animation: scrollLeft 58s linear infinite;
+            white-space: nowrap;
+        }
+
+        .scroll-item {
+            display: flex;
+            align-items: center;
+            flex-shrink: 0;
+        }
 
         .medal {
-            width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-weight: 900; font-size: 22px; margin-right: 16px; box-shadow: 0 0 30px rgba(0,0,0,0.7); animation: pulse 2s infinite;
+            width: 56px; 
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 22px;
+            margin-right: 16px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            animation: pulse 2s infinite;
         }
         .gold   { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
         .silver { background: linear-gradient(135deg, #e2e8f0, #94a3b8); }
         .bronze { background: linear-gradient(135deg, #fca5a5, #dc2626); color: white; }
 
         .rank-normal {
-            width: 50px; height: 50px; background: #1e293b; border: 3px solid #fbbf24; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: #fbbf24; margin-right: 16px;
+            width: 50px; 
+            height: 50px;
+            background: #1e293b;
+            border: 3px solid #fbbf24;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            color: #fbbf24;
+            margin-right: 16px;
         }
 
-        .scroll-item img { width: 54px; height: 54px; border-radius: 50%; border: 4px solid #fbbf24; box-shadow: 0 0 20px #fbbf24; margin-right: 14px; }
-        .scroll-item .nickname { font-weight: 800; font-size: 24px; color: white; text-shadow: 0 2px 8px black; }
-        .scroll-item .points { font-size: 20px; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+        .scroll-item img {
+            width: 54px; 
+            height: 54px;
+            border-radius: 50%;
+            border: 4px solid #fbbf24;
+            box-shadow: 0 0 20px #fbbf24;
+            margin-right: 14px;
+        }
 
-        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
-        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+        .scroll-item .nickname { 
+            font-weight: 800; 
+            font-size: 24px; 
+            color: white; 
+            text-shadow: 0 2px 8px black; 
+        }
+        .scroll-item .points { 
+            font-size: 20px; 
+            color: #fbbf24; 
+            font-weight: 700; 
+            margin-top: 4px; 
+        }
 
-        .top-leaderboard:hover .scroll-content { animation-play-state: paused; }
+        @keyframes scrollLeft { 
+            0%   { transform: translateX(0); } 
+            100% { transform: translateX(-100%); } 
+        }
+        @keyframes pulse { 
+            0%,100% { transform: scale(1); } 
+            50%     { transform: scale(1.12); } 
+        }
+
+        .top-leaderboard:hover .scroll-content { 
+            animation-play-state: paused; 
+        }
 
         .container {
             max-width: 1080px;
@@ -114,14 +175,41 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
+        .chat-event {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .chat-event .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
         .flip-tile {
             width: 62px; height: 62px; border: 2px solid #475569; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             font-size: 32px; font-weight: 700; text-transform: uppercase; color: white;
             background: #1e293b; position: relative; transform-style: preserve-3d;
         }
-        .flip-tile.flip { animation: flip 0.6s ease-in-out forwards; }
-        .flip-tile.revealed { background: #10b981 !important; border-color: #10b981 !important; color: white; box-shadow: 0 0 25px rgba(16,185,129,0.7); }
+        .flip-tile.flip {
+            animation: flip 0.6s ease-in-out forwards;
+        }
+        .flip-tile.revealed {
+            background: #10b981 !important; border-color: #10b981 !important; color: white;
+            box-shadow: 0 0 25px rgba(16,185,129,0.7);
+        }
         .flip-tile.correct-position { background: #10b981 !important; border-color: #10b981 !important; }
         .flip-tile.correct-letter   { background: #f59e0b !important; border-color: #f59e0b !important; }
         .flip-tile.incorrect        { background: #475569 !important; border-color: #475569 !important; color: #94a3b8; }
@@ -132,6 +220,37 @@
             100% { transform: rotateX(0deg); }
         }
 
+        .tries-text { font-size: 12px; color: #94a3b8; margin-left: 8px; font-weight: 500; }
+
+        .revealed-box {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            width: 52px; height: 52px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 28px; border-radius: 12px; margin: 4px;
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.7);
+            animation: glow 1.5s infinite alternate;
+        }
+        .unknown-box {
+            background: transparent;
+            border: 2px dashed #64748b;
+            color: #94a3b8;
+            width: 52px; height: 52px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 24px; border-radius: 12px; margin: 4px;
+        }
+        @keyframes glow { from { box-shadow: 0 0 20px rgba(16, 185, 129, 0.6); } to { box-shadow: 0 0 30px rgba(16, 185, 129, 0.9); } }
+
+        .timer-circle { width: 80px; height: 80px; position: relative; margin: 0 auto; }
+        .timer-circle svg { transform: rotate(-90deg); }
+        .timer-circle .bg { fill: none; stroke: #1e293b; stroke-width: 8; }
+        .timer-circle .progress { fill: none; stroke: #8b5cf6; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+        .timer-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 700; font-size: 18px; color: #8b5cf6; }
+
+        .winner-popup { background: linear-gradient(135deg, #1e293b, #0f172a); border: 3px solid #fbbf24; border-radius: 24px; padding: 2rem; text-align: center; box-shadow: 0 20px 50px rgba(251, 191, 36, 0.3); animation: bounce 0.6s ease; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        .winner-profile-img { width: 80px; height: 80px; border: 4px solid #fbbf24; border-radius: 50%; box-shadow: 0 0 30px rgba(251, 191, 36, 0.5); margin: 0 auto 1rem; }
+
         button { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-weight: 600; padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
         button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6); }
 
@@ -141,6 +260,7 @@
         .settings-icon { background: rgba(30, 41, 59, 0.6); padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 24px; transition: all 0.3s ease; }
         .settings-icon:hover { color: #8b5cf6; background: rgba(139, 92, 246, 0.2); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
 
+        .text-highlight { color: #8b5cf6; font-weight: 700; }
         .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
         .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
@@ -160,7 +280,7 @@
                             <div v-else-if="(i % 10) === 1" class="medal silver">2nd</div>
                             <div v-else-if="(i % 10) === 2" class="medal bronze">3rd</div>
                             <div v-else class="rank-normal">{{ (i % 10) + 1 }}</div>
-                            <img :src="p.profilePictureUrl" alt="avatar">
+                            <img :src="p.profilePictureUrl || 'https://via.placeholder.com/54'" alt="avatar">
                             <div>
                                 <div class="nickname">{{ p.nickname }}</div>
                                 <div class="points">{{ p.points }} pts</div>
@@ -177,14 +297,33 @@
                 <button class="settings-icon" @click="showSimulation = !showSimulation">Settings</button>
             </div>
 
+            <!-- Simulation Tool -->
             <transition name="fade">
                 <div v-if="showSimulation" class="glass-card mb-6">
-                    <p class="text-lg font-bold mb-3 text-purple-400">Current Word: <span class="text-white">{{ currentWord?.toUpperCase() || '—' }}</span></p>
+                    <p class="text-lg font-bold mb-3 text-purple-400">Current: <span class="text-white">{{ currentWord?.toUpperCase() || '—' }}</span></p>
                     <div class="grid grid-cols-1 gap-3 text-sm">
+                        <select v-model="languageMode" class="w-full">
+                            <option value="both">Both (ID/MY + EN)</option>
+                            <option value="indo">Indo/Malay Only</option>
+                            <option value="english">English Only</option>
+                        </select>
+
+                        <select v-model="wordLengthMode" class="w-full">
+                            <option value="random">Random Length (4-6) [LIVE BEST]</option>
+                            <option value="fixed">Fixed Length</option>
+                        </select>
+
+                        <select v-model="wordLength" class="w-full" v-if="wordLengthMode === 'fixed'">
+                            <option value="5">5 Huruf (Default)</option>
+                            <option value="4">4 Huruf (English Only)</option>
+                            <option value="6">6 Huruf (Malay Only)</option>
+                        </select>
+
                         <input v-model="simGuess" placeholder="Simulate guess..." class="w-full mt-3">
                         <input v-model="simNickname" placeholder="Nama" class="w-full">
-                        <input v-model="simUniqueId" placeholder="Unique ID" class="w-full">
+                        <input v-model="simUniqueId" placeholder="Unique ID (e.g. user123)" class="w-full">
                         <input v-model="simProfileUrl" placeholder="Profile URL (optional)" class="w-full">
+
                         <div class="grid grid-cols-2 gap-3 mt-4">
                             <button @click="simulateChat" class="bg-blue-600">Send Guess</button>
                             <button @click="simulateWinner" class="bg-green-600">Force Win</button>
@@ -196,23 +335,23 @@
                 </div>
             </transition>
 
+            <!-- Game Board -->
             <div class="text-center mb-8">
-                <p class="text-2xl font-bold text-white">Guess the {{ currentLength }}-Letter Word</p>
-                <p class="text-amber-400 text-lg">5 Attempts • No Clues</p>
+                <p class="text-2xl font-bold text-white">Teka {{ currentLength }} Huruf</p>
+                <p class="text-amber-400 text-lg">5 Percubaan • Tiada Clue</p>
             </div>
 
             <div class="flex justify-center gap-4 mb-10">
                 <div v-for="(letter, i) in revealed" :key="i"
                      class="flip-tile"
-                     :class="{ 'flip': letter, 'revealed': letter }"
+                     :class="{ 'flip': letter, 'revealed': letter, 'correct-position': letter }"
                      :style="{ animationDelay: letter ? (i * 0.15) + 's' : '0s' }">
                     {{ letter || '?' }}
                 </div>
             </div>
         </div>
     </div>
-
-    <script>
+        <script>
         const urlParams = new URLSearchParams(window.location.search);
         const ROOM = urlParams.get('room') || 'public';
 
@@ -230,10 +369,8 @@
                     scores: {},
                     top10: [],
                     currentWord: null,
-                    previousWord: null,
                     currentLength: 5,
-                    revealed: [],
-                    events: [],
+                    revealed: Array(6).fill(null),
                     winner: null,
                     roundWinnerId: null,
                     userTries: {},
@@ -244,17 +381,6 @@
                     simNickname: 'Tester',
                     simUniqueId: 'tester123',
                     simProfileUrl: '',
-                    timerValue: 120,
-                    timerInterval: null,
-                    timer: null,
-                    showTimerExpired: false,
-                    showLeaderboard: false,
-                    myRankQueue: [],
-                    currentMyRank: null,
-                    noTriesQueue: [],
-                    currentNoTries: null,
-                    queueInterval: null,
-                    noTriesInterval: null,
                     correctSound: null
                 }
             },
@@ -262,114 +388,56 @@
                 top10() {
                     return Object.values(this.scores)
                         .sort((a,b) => b.points - a.points)
-                        .slice(0,10)
-                        .map((s, i) => ({ ...s, rank: i+1 }));
+                        .slice(0,10);
                 }
             },
             methods: {
                 async loadScores() {
-                    try {
-                        const { data } = await supabase
-                            .from('wordle_scores')
-                            .select('*')
-                            .eq('room', this.room);
-                        this.scores = Object.fromEntries((data || []).map(x => [x.uniqueId, x]));
-                    } catch(e) { console.error(e); }
+                    const { data } = await supabase.from('wordle_scores').select('*').eq('room', this.room);
+                    this.scores = Object.fromEntries((data || []).map(x => [x.uniqueId, x]));
                 },
-                async saveScore(uniqueId, nickname, points = 1) {
-                    const existing = this.scores[uniqueId] || { points: 0 };
+                async saveScore(uid, nick, pts = 1) {
+                    const current = this.scores[uid] || { points: 0 };
                     await supabase.from('wordle_scores').upsert({
                         room: this.room,
-                        uniqueId,
-                        nickname,
-                        points: existing.points + points,
-                        profilePictureUrl: this.profileCache[uniqueId] || ''
+                        uniqueId: uid,
+                        nickname: nick,
+                        points: current.points + pts,
+                        profilePictureUrl: this.profileCache[uid] || ''
                     });
                     await this.loadScores();
                 },
-                async startNewGame() {
-                    try {
-                        const res = await fetch(`https://random-word-api.vercel.app/api?length=5`);
-                        const [word] = await res.json();
-                        this.currentWord = word.toLowerCase();
-                    } catch {
-                        this.currentWord = 'hello'; // fallback
-                    }
+                startNewGame() {
+                    this.currentWord = 'HELLO';
                     this.currentLength = 5;
                     this.revealed = Array(5).fill(null);
                     this.winner = null;
-                    this.roundWinnerId = null;
-                    this.userTries = {};
-                    this.userLastGuess = {};
-                    this.timerValue = 120;
-                    this.startTimer();
-                },
-                startTimer() {
-                    if (this.timerInterval) clearInterval(this.timerInterval);
-                    this.timerInterval = setInterval(() => {
-                        this.timerValue--;
-                        if (this.timerValue <= 0) this.startNewGame();
-                    }, 1000);
                 },
                 addEvent(eventData) {
                     if (eventData.event !== 'chat') return;
                     const data = eventData.data;
                     this.profileCache[data.uniqueId] = data.profilePictureUrl;
                     const comment = data.comment.trim().toLowerCase();
-
-                    if (!this.currentWord || this.winner || comment.length !== 5 || !/^[a-z]+$/.test(comment)) return;
-
-                    const uid = data.uniqueId;
-                    const now = Date.now();
-                    if (this.userLastGuess[uid] && now - this.userLastGuess[uid] < 2000) return;
-                    this.userLastGuess[uid] = now;
-
-                    this.userTries[uid] = (this.userTries[uid] || 0) + 1;
-                    if (this.userTries[uid] > 5) return;
-
-                    // Reveal letters
-                    for (let i = 0; i < 5; i++) {
-                        if (comment[i] === this.currentWord[i]) this.revealed[i] = comment[i].toUpperCase();
-                    }
-
-                    if (comment === this.currentWord) {
-                        if (this.roundWinnerId) return;
+                    if (comment === this.currentWord.toLowerCase()) {
+                        this.saveScore(data.uniqueId, data.nickname, 1);
                         this.correctSound.play();
-                        this.roundWinnerId = uid;
-                        this.winner = data;
-                        this.revealed = this.currentWord.toUpperCase().split('');
                         confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
-                        setTimeout(() => this.startNewGame(), 10000);
+                        this.revealed = this.currentWord.toUpperCase().split('');
                     }
-                },
-                simulateChat() {
-                    if (!this.simGuess || this.simGuess.length !== 5) return alert("Enter 5 letters");
-                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, profilePictureUrl: this.simProfileUrl || '', comment: this.simGuess } };
-                    this.addEvent(data);
-                    this.simGuess = '';
-                },
-                simulateWinner() {
-                    if (!this.currentWord) return;
-                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, comment: this.currentWord } };
-                    this.addEvent(data);
-                },
-                testSound() {
-                    this.correctSound.play();
                 }
             },
-            async mounted() {
-                await this.loadScores();
+            mounted() {
                 this.correctSound = new Audio('answer-correct.mp3');
-                this.correctSound.volume = 0.6;
                 this.startNewGame();
+                this.loadScores();
+                setInterval(this.loadScores, 8000);
 
-                let websocket = null;
-                function connect() {
-                    if (websocket) return;
-                    websocket = new WebSocket("ws://localhost:21213/");
-                    websocket.onmessage = (e) => app.addEvent(JSON.parse(e.data));
-                    websocket.onclose = () => { websocket = null; setTimeout(connect, 1000); };
-                }
+                let ws = null;
+                const connect = () => {
+                    ws = new WebSocket('ws://localhost:21213');
+                    ws.onmessage = e => this.addEvent(JSON.parse(e.data));
+                    ws.onclose = () => setTimeout(connect, 1000);
+                };
                 connect();
             }
         }).mount('#app');
