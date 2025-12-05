@@ -9,6 +9,7 @@
     <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -522,35 +523,59 @@
                     const rank = sorted.findIndex(u => u.uniqueId === uniqueId) + 1;
                     return rank || sorted.length + 1;
                 },
-                async loadScores() {
-                    try {
-                        const res = await fetch('/api/scores');
-                        this.scores = await res.json();
-                    } catch (e) {
-                        console.error('Gagal load scores:', e);
-                        this.scores = {};
-                    }
-                },
-                async saveScore(uniqueId, nickname, points) {
-                    try {
-                        await fetch('/api/scores', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ uniqueId, nickname, points })
-                        });
-                        const data = await fetch('/api/scores').then(r => r.json());
-                        this.scores = data;
-                    } catch (e) {
-                        console.error('Gagal simpan:', e);
-                    }
-                },
-                async clearScores() {
-                    if (confirm('Betul nak reset SEMUA point?')) {
-                        await fetch('/api/scores', { method: 'DELETE' });
-                        this.scores = {};
-                        alert('Semua point telah direset!');
-                    }
-                },
+                // === SUPABASE CONFIG (ubah ikut project kau) ===
+const supabaseUrl = 'https://xxxxxx.supabase.co'
+const supabaseKey = 'public-anon-key-kau-di-sini'  // guna anon key je okay
+const supabase = Supabase.createClient(supabaseUrl, supabaseKey)
+
+async loadScores() {
+    const { data, error } = await supabase
+        .from('wordle_scores')
+        .select('*')
+        .order('points', { ascending: false })
+
+    if (error) {
+        console.error('Supabase load error:', error)
+        this.scores = {}
+    } else {
+        const scoresObj = {}
+        data.forEach(row => {
+            scoresObj[row.uniqueId] = {
+                points: row.points,
+                nickname: row.nickname
+            }
+        })
+        this.scores = scoresObj
+    }
+},
+
+async saveScore(uniqueId, nickname, points) {
+    const { data, error } = await supabase
+        .from('wordle_scores')
+        .upsert(
+            { uniqueId, nickname, points },
+            { onConflict: 'uniqueId' }
+        )
+
+    if (error) console.error('Supabase save error:', error)
+    else await this.loadScores()  // refresh leaderboard
+},
+
+async clearScores() {
+    if (!confirm('Betul nak reset SEMUA point di Supabase?')) return
+
+    const { error } = await supabase
+        .from('wordle_scores')
+        .delete()
+        .gt('points', 0)  // delete semua
+
+    if (error) {
+        alert('Gagal reset: ' + error.message)
+    } else {
+        this.scores = {}
+        alert('Semua point telah direset di Supabase!')
+    }
+},
                 async startNewGame() {
                     if (this.wordLengthMode === 'random') {
                         this.currentLength = [4, 5, 6][Math.floor(Math.random() * 3)];
@@ -801,3 +826,4 @@
     </script>
 </body>
 </html>
+
