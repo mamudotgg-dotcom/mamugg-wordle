@@ -9,7 +9,6 @@
     <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -28,19 +27,6 @@
             color: #e2e8f0;
             overflow-x: hidden;
             min-height: 100vh;
-        }
-
-        .watermark {
-            position: fixed;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.6);
-            color: #fbbf24;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 14px;
-            z-index: 999;
-            font-weight: bold;
         }
 
         /* TOP 10 LEADERBOARD */
@@ -197,6 +183,7 @@
             flex-shrink: 0;
         }
 
+        /* FLIP ANIMATION — WORDLE STYLE */
         .flip-tile {
             width: 62px; height: 62px; border: 2px solid #475569; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
@@ -267,9 +254,8 @@
 </head>
 <body>
     <canvas id="confetti-canvas" class="fixed inset-0 z-40 pointer-events-none"></canvas>
-    <div class="watermark" v-if="room === 'public'">mamu.gg</div>
-
     <div id="app" class="container">
+
         <!-- TOP 10 LEADERBOARD -->
         <div class="top-leaderboard" v-if="top10.length > 0">
             <div class="scroll-wrapper">
@@ -280,7 +266,8 @@
                             <div v-else-if="(i % 10) === 1" class="medal silver">2nd</div>
                             <div v-else-if="(i % 10) === 2" class="medal bronze">3rd</div>
                             <div v-else class="rank-normal">{{ (i % 10) + 1 }}</div>
-                            <img :src="p.profilePictureUrl || 'https://via.placeholder.com/54'" alt="avatar">
+
+                            <img :src="p.profilePictureUrl" alt="avatar">
                             <div>
                                 <div class="nickname">{{ p.nickname }}</div>
                                 <div class="points">{{ p.points }} pts</div>
@@ -292,8 +279,9 @@
         </div>
 
         <div>
+            <!-- Header -->
             <div class="flex justify-between items-center mb-8">
-                <h1>MaMu.GG Wordle • {{ room === 'public' ? '' : room.toUpperCase() }}</h1>
+                <h1>MaMu.GG Wordle</h1>
                 <button class="settings-icon" @click="showSimulation = !showSimulation">Settings</button>
             </div>
 
@@ -316,131 +304,500 @@
                         <select v-model="wordLength" class="w-full" v-if="wordLengthMode === 'fixed'">
                             <option value="5">5 Huruf (Default)</option>
                             <option value="4">4 Huruf (English Only)</option>
-                            <option value="6">6 Huruf (Malay Only)</option>
+                            <option value="6">6 Huruf (English Only)</option>
                         </select>
 
-                        <input v-model="simGuess" placeholder="Simulate guess..." class="w-full mt-3">
-                        <input v-model="simNickname" placeholder="Nama" class="w-full">
-                        <input v-model="simUniqueId" placeholder="Unique ID (e.g. user123)" class="w-full">
+                        <input v-model="simUniqueId" placeholder="Unique ID" class="w-full">
+                        <input v-model="simNickname" placeholder="Nickname" class="w-full">
                         <input v-model="simProfileUrl" placeholder="Profile URL (optional)" class="w-full">
-
-                        <div class="grid grid-cols-2 gap-3 mt-4">
-                            <button @click="simulateChat" class="bg-blue-600">Send Guess</button>
-                            <button @click="simulateWinner" class="bg-green-600">Force Win</button>
-                            <button @click="simulateMyRank" class="bg-purple-600">!myrank</button>
-                            <button @click="simulateNoTries" class="bg-red-600">Habis Tries</button>
-                            <button @click="testSound" class="bg-yellow-600 col-span-2">Test Sound</button>
+                        <input v-model="simGuess" :placeholder="currentLength + ' huruf sahaja'" class="w-full">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button @click="simulateChat">Guess</button>
+                            <button @click="simulateWinner" class="bg-green-600 hover:bg-green-700">Winner</button>
+                            <button @click="simulateMyRank" class="col-span-2">!myrank</button>
+                            <button @click="simulateNoTries" class="bg-orange-600 hover:bg-orange-700 col-span-1">No Tries</button>
+                            <button @click="testSound" class="bg-blue-600 hover:bg-blue-700 col-span-1">Test Sound</button>
+                            <button @click="clearScores" class="bg-red-600 hover:bg-red-700 col-span-2">Clear Scores</button>
+                            <button @click="clearProfileCache" class="bg-purple-600 hover:bg-purple-700 col-span-2 mt-2">Refresh Avatars</button>
                         </div>
                     </div>
                 </div>
             </transition>
 
-            <!-- Game Board -->
-            <div class="text-center mb-8">
-                <p class="text-2xl font-bold text-white">Teka {{ currentLength }} Huruf</p>
-                <p class="text-amber-400 text-lg">5 Percubaan • Tiada Clue</p>
+            <!-- Status -->
+            <div class="text-center mb-6">
+                <p class="text-sm"><span class="text-slate-400">Status:</span>
+                    <span :class="status === 'Connected' ? 'text-green-400' : 'text-red-400'" class="font-bold ml-1">{{ status }}</span>
+                </p>
             </div>
 
-            <div class="flex justify-center gap-4 mb-10">
+            <!-- Game Info -->
+            <div v-if="currentWord" class="text-center mb-6">
+                <p class="text-xl font-bold text-white">
+                    Teka {{ currentLength }} Huruf!
+                    <span v-if="wordLengthMode === 'random'" class="text-yellow-400 text-sm ml-2">(Random!)</span>
+                    | <span class="text-highlight">!myrank</span> = Point
+                </p>
+                <p class="text-sm text-amber-400 mt-1">5 Percubaan • Tanpa Clue</p>
+            </div>
+
+            <!-- Timer -->
+            <div class="timer-circle mb-8">
+                <svg width="80" height="80">
+                    <circle class="bg" cx="40" cy="40" r="36"></circle>
+                    <circle class="progress" cx="40" cy="40" r="36" :style="{ strokeDashoffset: timerDashoffset }"></circle>
+                </svg>
+                <div class="timer-text">{{ timerValue }}s</div>
+            </div>
+
+            <!-- REVEALED LETTERS WITH FLIP -->
+            <div class="flex justify-center gap-3 mb-8">
                 <div v-for="(letter, i) in revealed" :key="i"
                      class="flip-tile"
-                     :class="{ 'flip': letter, 'revealed': letter, 'correct-position': letter }"
-                     :style="{ animationDelay: letter ? (i * 0.15) + 's' : '0s' }">
+                     :class="{ 'flip': letter, 'revealed': letter }"
+                     :style="{ animationDelay: letter ? (i * 0.2) + 's' : '0s' }">
                     {{ letter || '?' }}
                 </div>
             </div>
+
+            <!-- SEMUA POPUP ASAL -->
+            <transition name="fade">
+                <div v-if="currentMyRank" class="fixed top-16 left-0 right-0 mx-auto z-60 glass-card max-w-xs p-4">
+                    <img :src="profileCache[currentMyRank.uniqueId] || 'https://via.placeholder.com/40'" class="winner-profile-img mx-auto mb-3" alt="User">
+                    <p class="text-lg font-bold text-white">{{ currentMyRank.nickname }}</p>
+                    <p class="text-md text-purple-400">Points: {{ currentMyRank.points }}</p>
+                    <p class="text-md text-purple-400">Rank: #{{ currentMyRank.rank }}</p>
+                </div>
+            </transition>
+
+            <transition name="fade">
+                <div v-if="currentNoTries" class="fixed top-16 right-4 z-60 bg-red-600 text-white p-4 rounded-xl max-w-xs">
+                    <img :src="profileCache[currentNoTries.uniqueId] || 'https://via.placeholder.com/40'" class="winner-profile-img mx-auto mb-2" alt="User">
+                    <p class="text-lg font-bold">{{ currentNoTries.nickname }}</p>
+                    <p class="text-sm">Habis 5 percubaan!</p>
+                </div>
+            </transition>
+
+            <transition name="fade">
+                <div v-if="showTimerExpired" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 p-4">
+                    <div class="bg-red-600 text-white p-8 rounded-2xl text-center">
+                        <h2 class="text-3xl font-bold mb-3">Masa Tamat!</h2>
+                        <p class="text-lg">Round baru dalam 5 saat...</p>
+                    </div>
+                </div>
+            </transition>
+
+            <div v-if="winner" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 p-4">
+                <div class="winner-popup">
+                    <img :src="profileCache[winner.uniqueId] || 'https://via.placeholder.com/80'" class="winner-profile-img" alt="Winner">
+                    <h2 class="text-3xl font-bold text-yellow-400 mb-2">{{ winner.nickname }}</h2>
+                    <div class="flex justify-center gap-1 my-4">
+                        <div v-for="(l, i) in currentWord.toUpperCase().split('')" :key="i" class="revealed-box text-3xl">
+                            {{ l }}
+                        </div>
+                    </div>
+                    <p class="text-2xl font-bold text-green-400">TEPAT!</p>
+                    <p class="text-sm text-slate-300 mt-2">"{{ currentWord.toUpperCase() }}"</p>
+                </div>
+            </div>
+
+            <div v-if="showLeaderboard" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50 p-4">
+                <div class="glass-card max-w-sm w-full p-6">
+                    <h2 class="text-2xl font-bold text-purple-400 mb-4 text-center">Top 5 Pemain</h2>
+                    <div v-for="(l, i) in top5" :key="i" class="flex items-center mb-3 p-3 rounded-lg bg-slate-800 bg-opacity-50">
+                        <img :src="l.profilePictureUrl" class="w-10 h-10 rounded-full border-2 border-purple-500" alt="">
+                        <span class="ml-3 font-semibold text-white">#{{ i+1 }} {{ l.nickname }}</span>
+                        <span class="ml-auto text-yellow-400 font-bold">{{ l.points }} pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CHAT LOG — FLIP SEMUA TEKAAN SETIAP KALI ADA MASUK BARU -->
+            <div id="eventLog" ref="eventLog" class="flex-1 overflow-y-auto">
+                <transition-group name="chat" tag="div" class="space-y-3">
+                    <div v-for="(e, i) in events" :key="e.user.uniqueId + '-' + i" class="chat-event">
+                        <img :src="profileCache[e.user.uniqueId] || 'https://via.placeholder.com/40'" class="profile-img" alt="">
+                        <div>
+                            <div class="flex gap-2 justify-center">
+                                <div v-for="(tile, idx) in parseGuess(e.highlightedGuess)" :key="idx"
+                                     class="flip-tile flip"
+                                     :class="tile.type === 'correct-position' ? 'correct-position' : tile.type === 'correct-letter' ? 'correct-letter' : 'incorrect'"
+                                     :style="{ animationDelay: ((events.length - 1 - i) * 0.6 + idx * 0.15) + 's' }">
+                                    {{ tile.letter }}
+                                </div>
+                            </div>
+                            <div class="tries-text text-xs mt-1">
+                                {{ e.user.nickname }} • Tries left: {{ 5 - (userTries[e.user.uniqueId] || 0) }}
+                            </div>
+                        </div>
+                    </div>
+                </transition-group>
+            </div>
         </div>
     </div>
-        <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const ROOM = urlParams.get('room') || 'public';
 
-        const supabase = Supabase.createClient(
-            'https://qmsfbaswzwqgtuquocwz.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtc2ZiYXN3endxZ3R1cXVvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MDU0NTksImV4cCI6MjA4MDQ4MTQ1OX0.zAn20PdTkMLF16JUQzmFbekZKWYpJLC7Dboglrg9lRk'
-        );
-
+    <script>
         const { createApp } = Vue;
 
-        createApp({
+        const app = createApp({
             data() {
                 return {
-                    room: ROOM,
-                    scores: {},
-                    top10: [],
+                    status: 'Disconnected',
+                    events: [],
+                    malayWords: ['akbar','alami','ambil','angin','angsa','anjur','arnab','askar','tanam','badan','bagus','bahas','bakar','balik','bambu','benda','angka','barat','batik','belut','benci','beras','besar','bidan','bijak','bilik','bonda','bosan','habuk','buang','bubur','budak','bukan','bukit','bunga','buruk','patuh','buaya','cerah','cicak','cikgu','coral','dadih','dalam','darat','dasar','delta','kepak','dodol','dunia','ujian','dusun','haram','empat','benam','garam','geram','gilap','gulai','guruh','gusar','hakis','halal','harap','harta','hijau','hitam','hotel','hujan','hutan','tikam','ejaan','huruf','ivory','jahat','jalan','jambu','jarak','jauhi','jelas','jenis','jerut','kapak','kadar','tawan','kalam','kalah','kalau','kalis','mampu','kapal','kasih','katak','kawan','lawan','lemak','lembu','lepas','letak','lihat','likas','lumba','lumut','masin','mahal','makan','malam','malas','mandi','marah','masak','masuk','manis','merah','murka','nanas','nafsu','nenek','niaga','nilai','ombak','orang','pahat','pakai','panas','pandu','parut','pasar','pasir','pekan','pepah','perak','petik','pokok','polis','pohon','pulau','punya','putih','ramai','rindu','riang','rojak','rotan','rugbi','rumah','sabun','sejat','sakit','salah','salju','samak','satay','satai','sawah','sayup','sayur','sedih','segak','semak','senam','serai','silat','singa','sireh','sugul','sudip','organ','sunyi','susah','tauhu','takut','taman','tanah','tarik','tasik','telur','tempe','tenis','tepat','terus','tiada','tikus','ketua','tujuh','tukul','tunas','rubah','udang','sumur','usaha','utama','waktu'],
                     currentWord: null,
-                    currentLength: 5,
-                    revealed: Array(6).fill(null),
+                    previousWord: null,
+                    revealed: [],
                     winner: null,
                     roundWinnerId: null,
+                    showLeaderboard: false,
+                    showSimulation: false,
+                    scores: {},
+                    timer: null,
+                    timerValue: 120,
+                    timerInterval: null,
+                    showTimerExpired: false,
+                    myRankQueue: [],
+                    currentMyRank: null,
+                    noTriesQueue: [],
+                    currentNoTries: null,
+                    queueInterval: null,
+                    noTriesInterval: null,
                     userTries: {},
                     userLastGuess: {},
-                    profileCache: {},
-                    showSimulation: false,
+                    simUniqueId: 'simuser',
+                    simNickname: 'Sim User',
+                    simProfileUrl: 'https://via.placeholder.com/40',
                     simGuess: '',
-                    simNickname: 'Tester',
-                    simUniqueId: 'tester123',
-                    simProfileUrl: '',
-                    correctSound: null
-                }
+                    correctSound: null,
+                    languageMode: 'both',
+                    profileCache: {},
+                    wordLength: '5',
+                    wordLengthMode: 'random',
+                    currentLength: 5
+                };
             },
             computed: {
+                top5() {
+                    return Object.entries(this.scores)
+                        .map(([uniqueId, data]) => ({
+                            uniqueId,
+                            nickname: data.nickname,
+                            points: data.points,
+                            profilePictureUrl: this.profileCache[uniqueId] || 'https://via.placeholder.com/40'
+                        }))
+                        .sort((a, b) => b.points - a.points)
+                        .slice(0, 5);
+                },
                 top10() {
-                    return Object.values(this.scores)
-                        .sort((a,b) => b.points - a.points)
-                        .slice(0,10);
+                    return Object.entries(this.scores)
+                        .map(([id, d]) => ({
+                            uniqueId: id,
+                            nickname: d.nickname || 'Player',
+                            points: d.points || 0,
+                            profilePictureUrl: this.profileCache[id] || 'https://via.placeholder.com/54'
+                        }))
+                        .sort((a, b) => b.points - a.points)
+                        .slice(0, 10);
+                },
+                timerDashoffset() {
+                    const circumference = 2 * Math.PI * 36;
+                    const progress = this.timerValue / 120;
+                    return circumference * (1 - progress);
+                }
+            },
+            watch: {
+                winner(newWinner, oldWinner) {
+                    if (newWinner && !oldWinner) {
+                        confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#fbbf24', '#8b5cf6', '#3b82f6', '#10b981', '#ef4444'] });
+                    }
                 }
             },
             methods: {
+                updateStatus(newStatus) { this.status = newStatus; },
+                getUserRank(uniqueId) {
+                    const sorted = Object.entries(this.scores)
+                        .map(([id, data]) => ({ uniqueId: id, points: data.points }))
+                        .sort((a, b) => b.points - a.points);
+                    const rank = sorted.findIndex(u => u.uniqueId === uniqueId) + 1;
+                    return rank || sorted.length + 1;
+                },
                 async loadScores() {
-                    const { data } = await supabase.from('wordle_scores').select('*').eq('room', this.room);
-                    this.scores = Object.fromEntries((data || []).map(x => [x.uniqueId, x]));
+                    try {
+                        const res = await fetch('/api/scores');
+                        this.scores = await res.json();
+                    } catch (e) {
+                        console.error('Gagal load scores:', e);
+                        this.scores = {};
+                    }
                 },
-                async saveScore(uid, nick, pts = 1) {
-                    const current = this.scores[uid] || { points: 0 };
-                    await supabase.from('wordle_scores').upsert({
-                        room: this.room,
-                        uniqueId: uid,
-                        nickname: nick,
-                        points: current.points + pts,
-                        profilePictureUrl: this.profileCache[uid] || ''
-                    });
-                    await this.loadScores();
+                async saveScore(uniqueId, nickname, points) {
+                    try {
+                        await fetch('/api/scores', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ uniqueId, nickname, points })
+                        });
+                        const data = await fetch('/api/scores').then(r => r.json());
+                        this.scores = data;
+                    } catch (e) {
+                        console.error('Gagal simpan:', e);
+                    }
                 },
-                startNewGame() {
-                    this.currentWord = 'HELLO';
-                    this.currentLength = 5;
-                    this.revealed = Array(5).fill(null);
+                async clearScores() {
+                    if (confirm('Betul nak reset SEMUA point?')) {
+                        await fetch('/api/scores', { method: 'DELETE' });
+                        this.scores = {};
+                        alert('Semua point telah direset!');
+                    }
+                },
+                async startNewGame() {
+                    if (this.wordLengthMode === 'random') {
+                        this.currentLength = [4, 5, 6][Math.floor(Math.random() * 3)];
+                    } else {
+                        this.currentLength = parseInt(this.wordLength);
+                    }
+
+                    let selectedWord, attempts = 0, maxAttempts = 10;
+                    const length = this.currentLength;
+                    const forceEnglish = length !== 5;
+                    const useIndo = !forceEnglish && (this.languageMode === 'indo' || (this.languageMode === 'both' && Math.random() < 0.5));
+
+                    try {
+                        if (useIndo) {
+                            do {
+                                const i = Math.floor(Math.random() * this.malayWords.length);
+                                selectedWord = this.malayWords[i];
+                                attempts++;
+                            } while (selectedWord === this.previousWord && attempts < maxAttempts);
+                        } else {
+                            do {
+                                const res = await fetch(`https://random-word-api.vercel.app/api?length=${length}`);
+                                [selectedWord] = await res.json();
+                                attempts++;
+                            } while (selectedWord === this.previousWord && attempts < maxAttempts);
+                        }
+                    } catch (e) {
+                        console.error('API gagal, guna fallback:', e);
+                        const i = Math.floor(Math.random() * this.malayWords.length);
+                        selectedWord = this.malayWords[i];
+                    }
+
+                    this.previousWord = this.currentWord;
+                    this.currentWord = selectedWord.toLowerCase();
+                    this.revealed = Array(length).fill(null);
+                    this.events = [];
                     this.winner = null;
+                    this.roundWinnerId = null;
+                    this.userTries = {};
+                    this.userLastGuess = {};
+                    this.showLeaderboard = false;
+                    this.showSimulation = false;
+                    this.myRankQueue = [];
+                    this.currentMyRank = null;
+                    this.noTriesQueue = [];
+                    this.currentNoTries = null;
+                    this.timerValue = 120;
+                    this.startTimer();
+                },
+                startTimer() {
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    this.timerInterval = setInterval(() => {
+                        this.timerValue--;
+                        if (this.timerValue <= 0) this.handleTimerEnd();
+                    }, 1000);
+                },
+                handleTimerEnd() {
+                    clearInterval(this.timerInterval);
+                    this.showTimerExpired = true;
+                    setTimeout(() => {
+                        this.showTimerExpired = false;
+                        this.startNewGame();
+                    }, 5000);
                 },
                 addEvent(eventData) {
                     if (eventData.event !== 'chat') return;
                     const data = eventData.data;
                     this.profileCache[data.uniqueId] = data.profilePictureUrl;
-                    const comment = data.comment.trim().toLowerCase();
-                    if (comment === this.currentWord.toLowerCase()) {
-                        this.saveScore(data.uniqueId, data.nickname, 1);
-                        this.correctSound.play();
-                        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
-                        this.revealed = this.currentWord.toUpperCase().split('');
+                    let comment = data.comment.trim().toLowerCase();
+
+                    if (comment === '!myrank') {
+                        const rank = this.getUserRank(data.uniqueId);
+                        const points = this.scores[data.uniqueId]?.points || 0;
+                        this.myRankQueue.push({ uniqueId: data.uniqueId, nickname: data.nickname, points, rank });
+                        this.showNextMyRank();
+                        return;
                     }
+
+                    if (!this.currentWord || this.winner || comment.length !== this.currentLength || !/^[a-z]+$/.test(comment)) return;
+
+                    const uid = data.uniqueId;
+                    const now = Date.now();
+                    if (this.userLastGuess[uid] && now - this.userLastGuess[uid] < 2000) return;
+                    this.userLastGuess[uid] = now;
+
+                    this.userTries[uid] = (this.userTries[uid] || 0) + 1;
+                    if (this.userTries[uid] > 5) {
+                        this.noTriesQueue.push({ uniqueId: uid, nickname: data.nickname });
+                        this.showNextNoTries();
+                        return;
+                    }
+
+                    const newEvent = {
+                        user: { uniqueId: uid, nickname: data.nickname },
+                        highlightedGuess: this.getHighlightedGuess(comment, uid)
+                    };
+                    this.events.unshift(newEvent);
+                    if (this.events.length > 20) this.events.pop();
+
+                    this.$nextTick(() => {
+                        const log = this.$refs.eventLog;
+                        if (log) log.scrollTop = 0;
+                    });
+
+                    const word = this.currentWord.split('');
+                    for (let i = 0; i < this.currentLength; i++) {
+                        if (comment[i] === word[i]) this.revealed[i] = comment[i].toUpperCase();
+                    }
+
+                    if (comment === this.currentWord) {
+                        if (this.roundWinnerId) return;
+                        try { this.correctSound.play(); } catch(e) {}
+                        this.roundWinnerId = uid;
+                        this.winner = { uniqueId: uid, nickname: data.nickname };
+                        this.startNewGameAfterDelay();
+                    }
+                },
+                getHighlightedGuess(guess, uid) {
+                    const word = this.currentWord.split('');
+                    const g = guess.split('');
+                    const res = [];
+                    const count = {};
+                    word.forEach(l => count[l] = (count[l] || 0) + 1);
+
+                    for (let i = 0; i < this.currentLength; i++) {
+                        if (g[i] === word[i]) {
+                            res[i] = `<span class="guess-letter correct-position">${g[i].toUpperCase()}</span>`;
+                            count[g[i]]--;
+                        }
+                    }
+                    for (let i = 0; i < this.currentLength; i++) {
+                        if (!res[i]) {
+                            if (count[g[i]] > 0 && word.includes(g[i])) {
+                                res[i] = `<span class="guess-letter correct-letter">${g[i].toUpperCase()}</span>`;
+                                count[g[i]]--;
+                            } else {
+                                res[i] = `<span class="guess-letter incorrect">${g[i].toUpperCase()}</span>`;
+                            }
+                        }
+                    }
+                    return res.join('');
+                },
+                parseGuess(html) {
+                    const div = document.createElement('div');
+                    div.innerHTML = html;
+                    const spans = div.querySelectorAll('.guess-letter');
+                    return Array.from(spans).map(s => {
+                        const l = s.textContent;
+                        if (s.classList.contains('correct-position')) return { letter: l, type: 'correct-position' };
+                        if (s.classList.contains('correct-letter')) return { letter: l, type: 'correct-letter' };
+                        return { letter: l, type: 'incorrect' };
+                    });
+                },
+                async startNewGameAfterDelay() {
+                    if (this.winner && this.roundWinnerId === this.winner.uniqueId) {
+                        const id = this.winner.uniqueId;
+                        if (!this.scores[id]) {
+                            this.scores[id] = { points: 0, nickname: this.winner.nickname };
+                        }
+                        this.scores[id].points += 1;
+                        await this.saveScore(id, this.winner.nickname, this.scores[id].points);
+                    }
+                    clearTimeout(this.timer);
+                    clearInterval(this.timerInterval);
+                    this.timer = setTimeout(() => {
+                        this.winner = null;
+                        this.showLeaderboard = true;
+                        this.timer = setTimeout(() => {
+                            this.showLeaderboard = false;
+                            this.startNewGame();
+                        }, 10000);
+                    }, 10000);
+                },
+                clearProfileCache() {
+                    this.profileCache = {};
+                    alert('Semua avatar telah dibersihkan.');
+                },
+                simulateChat() {
+                    if (!this.simGuess || this.simGuess.length !== this.currentLength || !/^[a-z]+$/.test(this.simGuess)) return alert(`Masukkan ${this.currentLength} huruf sahaja.`);
+                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, profilePictureUrl: this.simProfileUrl || 'https://via.placeholder.com/40', comment: this.simGuess } };
+                    this.addEvent(data);
+                    this.simGuess = '';
+                },
+                simulateWinner() {
+                    if (!this.currentWord) return alert('Tiada perkataan aktif.');
+                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, profilePictureUrl: this.simProfileUrl || 'https://via.placeholder.com/40', comment: this.currentWord } };
+                    this.addEvent(data);
+                },
+                simulateMyRank() {
+                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, profilePictureUrl: this.simProfileUrl || 'https://via.placeholder.com/40', comment: '!myrank' } };
+                    this.addEvent(data);
+                },
+                simulateNoTries() {
+                    this.noTriesQueue.push({ uniqueId: this.simUniqueId, nickname: this.simNickname });
+                    this.showNextNoTries();
+                },
+                testSound() {
+                    try { this.correctSound.play(); } catch(e) { console.error(e); }
+                },
+                showNextMyRank() {
+                    if (this.currentMyRank || !this.myRankQueue.length) return;
+                    this.currentMyRank = this.myRankQueue.shift();
+                    setTimeout(() => {
+                        this.currentMyRank = null;
+                        setTimeout(() => this.showNextMyRank(), 1000);
+                    }, 5000);
+                },
+                showNextNoTries() {
+                    if (this.currentNoTries || !this.noTriesQueue.length) return;
+                    this.currentNoTries = this.noTriesQueue.shift();
+                    setTimeout(() => {
+                        this.currentNoTries = null;
+                        setTimeout(() => this.showNextNoTries(), 1000);
+                    }, 5000);
                 }
             },
-            mounted() {
+            async mounted() {
+                await this.loadScores();
                 this.correctSound = new Audio('answer-correct.mp3');
+                this.correctSound.preload = 'auto';
+                this.correctSound.volume = 0.6;
                 this.startNewGame();
-                this.loadScores();
-                setInterval(this.loadScores, 8000);
 
-                let ws = null;
-                const connect = () => {
-                    ws = new WebSocket('ws://localhost:21213');
-                    ws.onmessage = e => this.addEvent(JSON.parse(e.data));
-                    ws.onclose = () => setTimeout(connect, 1000);
-                };
-                connect();
+                this.queueInterval = setInterval(() => {
+                    if (this.myRankQueue.length && !this.currentMyRank) this.showNextMyRank();
+                }, 1000);
+                this.noTriesInterval = setInterval(() => {
+                    if (this.noTriesQueue.length && !this.currentNoTries) this.showNextNoTries();
+                }, 1000);
+            },
+            beforeUnmount() {
+                clearInterval(this.queueInterval);
+                clearInterval(this.noTriesInterval);
+                clearInterval(this.timerInterval);
             }
         }).mount('#app');
+
+        let websocket = null;
+        function connect() {
+            if (websocket) return;
+            websocket = new WebSocket("ws://localhost:21213/");
+            websocket.onopen = () => app.updateStatus("Connected");
+            websocket.onclose = () => { app.updateStatus("Disconnected"); websocket = null; setTimeout(connect, 1000); };
+            websocket.onerror = () => { app.updateStatus("Connection Failed"); websocket = null; setTimeout(connect, 1000); };
+            websocket.onmessage = (e) => app.addEvent(JSON.parse(e.data));
+        }
+        window.addEventListener('load', connect);
     </script>
 </body>
 </html>
