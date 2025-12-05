@@ -4,39 +4,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MaMu.GG Wordle • TikTok Live</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
-        body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%); color: #e2e8f0; min-height: 100vh; margin:0; }
-        .watermark { position: fixed; bottom: 15px; right: 15px; background: rgba(0,0,0,0.6); padding: 8px 15px; border-radius: 12px; font-size: 14px; color: #fbbf24; z-index: 999; }
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --light: #f8fafc;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e1b4b 0%, #0f172a 50%, #1e293b 100%);
+            color: #e2e8f0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .watermark {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(0,0,0,0.6);
+            color: #fbbf24;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            z-index: 999;
+            font-weight: bold;
+        }
+
+        /* TOP 10 LEADERBOARD */
+        .top-leaderboard {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 96px;
+            background: linear-gradient(to right, rgba(88,28,245,0.96), rgba(59,130,246,0.96));
+            backdrop-filter: blur(15px);
+            z-index: 5;
+            overflow: hidden;
+            border-bottom: 4px solid #fbbf24;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+            user-select: none;
+        }
+
+        .scroll-wrapper { display: flex; height: 100%; align-items: center; }
+        .scroll-content { display: flex; gap: 70px; padding-left: 100vw; animation: scrollLeft 58s linear infinite; white-space: nowrap; }
+        .scroll-item { display: flex; align-items: center; flex-shrink: 0; }
+
+        .medal {
+            width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-weight: 900; font-size: 22px; margin-right: 16px; box-shadow: 0 0 30px rgba(0,0,0,0.7); animation: pulse 2s infinite;
+        }
+        .gold   { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+        .silver { background: linear-gradient(135deg, #e2e8f0, #94a3b8); }
+        .bronze { background: linear-gradient(135deg, #fca5a5, #dc2626); color: white; }
+
+        .rank-normal {
+            width: 50px; height: 50px; background: #1e293b; border: 3px solid #fbbf24; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 20px; color: #fbbf24; margin-right: 16px;
+        }
+
+        .scroll-item img { width: 54px; height: 54px; border-radius: 50%; border: 4px solid #fbbf24; box-shadow: 0 0 20px #fbbf24; margin-right: 14px; }
+        .scroll-item .nickname { font-weight: 800; font-size: 24px; color: white; text-shadow: 0 2px 8px black; }
+        .scroll-item .points { font-size: 20px; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+
+        @keyframes scrollLeft { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+
+        .top-leaderboard:hover .scroll-content { animation-play-state: paused; }
+
+        .container {
+            max-width: 1080px;
+            height: 1920px;
+            margin: 0 auto;
+            padding: 120px 2rem 2rem !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 3rem;
+            background: linear-gradient(to right, #8b5cf6, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            letter-spacing: -1px;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(100, 116, 139, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .flip-tile {
+            width: 62px; height: 62px; border: 2px solid #475569; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: 700; text-transform: uppercase; color: white;
+            background: #1e293b; position: relative; transform-style: preserve-3d;
+        }
+        .flip-tile.flip { animation: flip 0.6s ease-in-out forwards; }
+        .flip-tile.revealed { background: #10b981 !important; border-color: #10b981 !important; color: white; box-shadow: 0 0 25px rgba(16,185,129,0.7); }
+        .flip-tile.correct-position { background: #10b981 !important; border-color: #10b981 !important; }
+        .flip-tile.correct-letter   { background: #f59e0b !important; border-color: #f59e0b !important; }
+        .flip-tile.incorrect        { background: #475569 !important; border-color: #475569 !important; color: #94a3b8; }
+
+        @keyframes flip {
+            0%   { transform: rotateX(0deg); }
+            50%  { transform: rotateX(90deg); background: #1e293b; }
+            100% { transform: rotateX(0deg); }
+        }
+
+        button { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; font-weight: 600; padding: 12px 20px; border-radius: 12px; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+        button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(139, 92, 246, 0.6); }
+
+        input, select { background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(8px); border: 1px solid rgba(100, 116, 139, 0.4); color: #e2e8f0; border-radius: 12px; padding: 12px 16px; font-size: 15px; }
+        input:focus, select:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3); }
+
+        .settings-icon { background: rgba(30, 41, 59, 0.6); padding: 12px; border-radius: 12px; color: #94a3b8; font-size: 24px; transition: all 0.3s ease; }
+        .settings-icon:hover { color: #8b5cf6; background: rgba(139, 92, 246, 0.2); box-shadow: 0 0 15px rgba(139, 92, 246, 0.4); }
+
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
     </style>
 </head>
 <body>
-    <div class="watermark" v-if="room === 'public' || !room">mamu.gg</div>
-    <div id="app">
-        <div class="container" style="padding:20px; text-align:center;">
-            <h1 style="font-size:3rem; background: linear-gradient(to right,#8b5cf6,#3b82f6); -webkit-background-clip: text; color: transparent;">
-                MaMu.GG Wordle • {{ room || 'PUBLIC' }}
-            </h1>
-            <p v-if="room && room !== 'public'" style="color:#10b981; font-weight:bold; font-size:1.3rem;">
-                Private Room Active – Score tak campur!
-            </p>
-            <p style="font-size:1.1rem; margin:20px 0;">
-                Jalankan Tikfinity → teka dalam live → score masuk automatik
-            </p>
-            <button @click="addTestScore" style="padding:12px 24px; background:#8b5cf6; color:white; border:none; border-radius:12px; font-size:1rem; cursor:pointer;">
-                Test Tambah Score ({{ room || 'public' }})
-            </button>
-            <h3 style="margin-top:30px; color:#fbbf24;">Leaderboard {{ room || 'Public' }}</h3>
-            <ol style="background:rgba(255,255,255,0.1); padding:20px; border-radius:12px; max-width:500px; margin:20px auto;">
-                <li v-for="(s, i) in leaderboard" :key="i" style="margin:10px 0; font-size:1.2rem;">
-                    #{{ i+1 }} {{ s.nickname || 'Anon' }} → {{ s.points }} pts
-                </li>
-                <li v-if="leaderboard.length === 0">Belum ada score</li>
-            </ol>
+    <canvas id="confetti-canvas" class="fixed inset-0 z-40 pointer-events-none"></canvas>
+    <div class="watermark" v-if="room === 'public'">mamu.gg</div>
+
+    <div id="app" class="container">
+        <!-- TOP 10 LEADERBOARD -->
+        <div class="top-leaderboard" v-if="top10.length > 0">
+            <div class="scroll-wrapper">
+                <div class="scroll-content">
+                    <template v-for="(p, i) in [...top10, ...top10]" :key="i">
+                        <div class="scroll-item">
+                            <div v-if="(i % 10) === 0" class="medal gold">1st</div>
+                            <div v-else-if="(i % 10) === 1" class="medal silver">2nd</div>
+                            <div v-else-if="(i % 10) === 2" class="medal bronze">3rd</div>
+                            <div v-else class="rank-normal">{{ (i % 10) + 1 }}</div>
+                            <img :src="p.profilePictureUrl" alt="avatar">
+                            <div>
+                                <div class="nickname">{{ p.nickname }}</div>
+                                <div class="points">{{ p.points }} pts</div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <div class="flex justify-between items-center mb-8">
+                <h1>MaMu.GG Wordle • {{ room === 'public' ? '' : room.toUpperCase() }}</h1>
+                <button class="settings-icon" @click="showSimulation = !showSimulation">Settings</button>
+            </div>
+
+            <transition name="fade">
+                <div v-if="showSimulation" class="glass-card mb-6">
+                    <p class="text-lg font-bold mb-3 text-purple-400">Current Word: <span class="text-white">{{ currentWord?.toUpperCase() || '—' }}</span></p>
+                    <div class="grid grid-cols-1 gap-3 text-sm">
+                        <input v-model="simGuess" placeholder="Simulate guess..." class="w-full mt-3">
+                        <input v-model="simNickname" placeholder="Nama" class="w-full">
+                        <input v-model="simUniqueId" placeholder="Unique ID" class="w-full">
+                        <input v-model="simProfileUrl" placeholder="Profile URL (optional)" class="w-full">
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <button @click="simulateChat" class="bg-blue-600">Send Guess</button>
+                            <button @click="simulateWinner" class="bg-green-600">Force Win</button>
+                            <button @click="simulateMyRank" class="bg-purple-600">!myrank</button>
+                            <button @click="simulateNoTries" class="bg-red-600">Habis Tries</button>
+                            <button @click="testSound" class="bg-yellow-600 col-span-2">Test Sound</button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+
+            <div class="text-center mb-8">
+                <p class="text-2xl font-bold text-white">Guess the {{ currentLength }}-Letter Word</p>
+                <p class="text-amber-400 text-lg">5 Attempts • No Clues</p>
+            </div>
+
+            <div class="flex justify-center gap-4 mb-10">
+                <div v-for="(letter, i) in revealed" :key="i"
+                     class="flip-tile"
+                     :class="{ 'flip': letter, 'revealed': letter }"
+                     :style="{ animationDelay: letter ? (i * 0.15) + 's' : '0s' }">
+                    {{ letter || '?' }}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -45,37 +217,160 @@
         const ROOM = urlParams.get('room') || 'public';
 
         const supabase = Supabase.createClient(
-            import.meta.env.VITE_SUPABASE_URL || 'https://ixqepwpsjgnzqthhxaqo.supabase.co',
-            import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml4cWVwd3BzamduenF0aGh4YXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY2Nzc2MDAsImV4cCI6MjA1MjI1MzYwMH0.qs5r4Z9b9kN9x9tF8z8c8r7v8w8x8y8z8A8B8C8D8E'
+            'https://qmsfbaswzwqgtuquocwz.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFtc2ZiYXN3endxZ3R1cXVvY3d6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MDU0NTksImV4cCI6MjA4MDQ4MTQ1OX0.zAn20PdTkMLF16JUQzmFbekZKWYpJLC7Dboglrg9lRk'
         );
 
+        const { createApp } = Vue;
+
         createApp({
-            data() { return { room: ROOM, leaderboard: [] } },
-            async mounted() {
-                await this.loadScores();
-                setInterval(this.loadScores, 8000);
+            data() {
+                return {
+                    room: ROOM,
+                    scores: {},
+                    top10: [],
+                    currentWord: null,
+                    previousWord: null,
+                    currentLength: 5,
+                    revealed: [],
+                    events: [],
+                    winner: null,
+                    roundWinnerId: null,
+                    userTries: {},
+                    userLastGuess: {},
+                    profileCache: {},
+                    showSimulation: false,
+                    simGuess: '',
+                    simNickname: 'Tester',
+                    simUniqueId: 'tester123',
+                    simProfileUrl: '',
+                    timerValue: 120,
+                    timerInterval: null,
+                    timer: null,
+                    showTimerExpired: false,
+                    showLeaderboard: false,
+                    myRankQueue: [],
+                    currentMyRank: null,
+                    noTriesQueue: [],
+                    currentNoTries: null,
+                    queueInterval: null,
+                    noTriesInterval: null,
+                    correctSound: null
+                }
+            },
+            computed: {
+                top10() {
+                    return Object.values(this.scores)
+                        .sort((a,b) => b.points - a.points)
+                        .slice(0,10)
+                        .map((s, i) => ({ ...s, rank: i+1 }));
+                }
             },
             methods: {
                 async loadScores() {
-                    const { data } = await supabase
-                        .from('wordle_scores')
-                        .select('*')
-                        .eq('room', this.room)
-                        .order('points', { ascending: false });
-                    this.leaderboard = data || [];
+                    try {
+                        const { data } = await supabase
+                            .from('wordle_scores')
+                            .select('*')
+                            .eq('room', this.room);
+                        this.scores = Object.fromEntries((data || []).map(x => [x.uniqueId, x]));
+                    } catch(e) { console.error(e); }
                 },
-                async addTestScore() {
-                    const nick = prompt("Nama tester:", "Tester"+Date.now().toString().slice(-4));
-                    if (nick) {
-                        await supabase.from('wordle_scores').insert({
-                            room: this.room,
-                            uniqueId: 'test_'+Date.now(),
-                            nickname: nick,
-                            points: Math.floor(Math.random()*15)+1
-                        });
-                        await this.loadScores();
+                async saveScore(uniqueId, nickname, points = 1) {
+                    const existing = this.scores[uniqueId] || { points: 0 };
+                    await supabase.from('wordle_scores').upsert({
+                        room: this.room,
+                        uniqueId,
+                        nickname,
+                        points: existing.points + points,
+                        profilePictureUrl: this.profileCache[uniqueId] || ''
+                    });
+                    await this.loadScores();
+                },
+                async startNewGame() {
+                    try {
+                        const res = await fetch(`https://random-word-api.vercel.app/api?length=5`);
+                        const [word] = await res.json();
+                        this.currentWord = word.toLowerCase();
+                    } catch {
+                        this.currentWord = 'hello'; // fallback
                     }
+                    this.currentLength = 5;
+                    this.revealed = Array(5).fill(null);
+                    this.winner = null;
+                    this.roundWinnerId = null;
+                    this.userTries = {};
+                    this.userLastGuess = {};
+                    this.timerValue = 120;
+                    this.startTimer();
+                },
+                startTimer() {
+                    if (this.timerInterval) clearInterval(this.timerInterval);
+                    this.timerInterval = setInterval(() => {
+                        this.timerValue--;
+                        if (this.timerValue <= 0) this.startNewGame();
+                    }, 1000);
+                },
+                addEvent(eventData) {
+                    if (eventData.event !== 'chat') return;
+                    const data = eventData.data;
+                    this.profileCache[data.uniqueId] = data.profilePictureUrl;
+                    const comment = data.comment.trim().toLowerCase();
+
+                    if (!this.currentWord || this.winner || comment.length !== 5 || !/^[a-z]+$/.test(comment)) return;
+
+                    const uid = data.uniqueId;
+                    const now = Date.now();
+                    if (this.userLastGuess[uid] && now - this.userLastGuess[uid] < 2000) return;
+                    this.userLastGuess[uid] = now;
+
+                    this.userTries[uid] = (this.userTries[uid] || 0) + 1;
+                    if (this.userTries[uid] > 5) return;
+
+                    // Reveal letters
+                    for (let i = 0; i < 5; i++) {
+                        if (comment[i] === this.currentWord[i]) this.revealed[i] = comment[i].toUpperCase();
+                    }
+
+                    if (comment === this.currentWord) {
+                        if (this.roundWinnerId) return;
+                        this.correctSound.play();
+                        this.roundWinnerId = uid;
+                        this.winner = data;
+                        this.revealed = this.currentWord.toUpperCase().split('');
+                        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+                        setTimeout(() => this.startNewGame(), 10000);
+                    }
+                },
+                simulateChat() {
+                    if (!this.simGuess || this.simGuess.length !== 5) return alert("Enter 5 letters");
+                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, profilePictureUrl: this.simProfileUrl || '', comment: this.simGuess } };
+                    this.addEvent(data);
+                    this.simGuess = '';
+                },
+                simulateWinner() {
+                    if (!this.currentWord) return;
+                    const data = { event: 'chat', data: { uniqueId: this.simUniqueId, nickname: this.simNickname, comment: this.currentWord } };
+                    this.addEvent(data);
+                },
+                testSound() {
+                    this.correctSound.play();
                 }
+            },
+            async mounted() {
+                await this.loadScores();
+                this.correctSound = new Audio('answer-correct.mp3');
+                this.correctSound.volume = 0.6;
+                this.startNewGame();
+
+                let websocket = null;
+                function connect() {
+                    if (websocket) return;
+                    websocket = new WebSocket("ws://localhost:21213/");
+                    websocket.onmessage = (e) => app.addEvent(JSON.parse(e.data));
+                    websocket.onclose = () => { websocket = null; setTimeout(connect, 1000); };
+                }
+                connect();
             }
         }).mount('#app');
     </script>
