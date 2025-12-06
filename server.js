@@ -17,7 +17,7 @@ const server = app.listen(PORT, () => console.log(`Server jalan port ${PORT}`));
 const wss = new WebSocketServer({ server });
 
 // GANTI DENGAN USERNAME TIKTOK KAU (tanpa @)
-const TIKTOK_USERNAME = "yoyo_savagemike";
+const TIKTOK_USERNAME = "sueatime";
 
 const liveConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {
   fetchOptions: {
@@ -54,4 +54,5 @@ liveConnection.on('chat', data => {
 
 liveConnection.on('error', err => {
   console.error('TikTok error:', err);
+
 });
