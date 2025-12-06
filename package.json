@@ -1,12 +1,13 @@
 {
-  "name": "mamu-wordle",
+  "name": "mamu-wordle-tiktok",
   "version": "1.0.0",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
-    "ws": "^8.14.2",
-    "@tiktoklive/node": "latest"
+    "express": "^4.21.1",
+    "ws": "^8.18.0",
+    "@tiktoklive/node": "^2.2.0"
   }
 }
