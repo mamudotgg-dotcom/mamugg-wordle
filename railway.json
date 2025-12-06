@@ -1,5 +1,21 @@
 {
-  "buildCommand": "npm install",
-  "startCommand": "node server.js",
-  "rootDirectory": "."
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "nixpacks",
+    "nixpacksPlan": {
+      "providers": ["nodejs"],
+      "phases": {
+        "setup": {
+          "nixPkgs": ["nodejs-20_x"],
+          "aptPkgs": []
+        }
+      }
+    }
+  },
+  "deploy": {
+    "startCommand": "node server.js",
+    "restartPolicy": "ON_FAILURE",
+    "healthcheckPath": "/",
+    "healthcheckTimeout": 60
+  }
 }
