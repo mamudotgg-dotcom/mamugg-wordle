@@ -14,7 +14,7 @@ const server = app.listen(PORT, () => console.log(`Server jalan → port ${PORT}
 const wss = new WebSocketServer({ server });
 
 // USERNAME TIKTOK KAU (tanpa @)
-const TIKTOK_USERNAME = "mamu.gg";
+const TIKTOK_USERNAME = "sueatime";
 
 // Paling ringkas & paling stabil 2025 (tanpa proxy, tanpa session pun OK kalau live aktif)
 const liveConnection = new TikTokLiveConnection(TIKTOK_USERNAME, {
@@ -60,3 +60,4 @@ liveConnection.on('chat', data => {
 });
 
 liveConnection.on('error', () => setTimeout(startConnect, 12000));
+
