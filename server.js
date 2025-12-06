@@ -1,12 +1,16 @@
 const express = require('express');
 const { WebSocketServer } = require('ws');
 const tiktokLiveConnector = require('@tiktoklive/node');
+const path = require('path');          // ← tambah ni
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// Serve static files
-app.use(express.static(__dirname));
+// ini 3 line WAJIB untuk Railway
+app.use(express.static(path.join(__dirname)));           // serve semua file dalam folder
+app.get('*', (req, res) => {                             // kalau tak jumpa route lain
+  res.sendFile(path.join(__dirname, 'index.html'));        // hantar index.html
+});
 
 const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
@@ -14,20 +18,16 @@ const server = app.listen(PORT, () => {
 
 const wss = new WebSocketServer({ server });
 
-wss.on('connection', (ws) => {
-  console.log('Overlay connected');
-  
-  ws.on('close', () => console.log('Overlay disconnected'));
-});
-
-// === CONNECT TO TIKTOK LIVE ===
-const tiktokUsername = "mamu.gg"; // ubah ni
+// === TIKTOK LIVE CONNECT ===
+const tiktokUsername = "yoyo_savagemike";   // ← pastikan betul macam ni
 
 tiktokLiveConnector.connect(tiktokUsername, {
   processInitialData: false,
   enableExtendedGiftInfo: true,
-}).then(live => {
-  console.log(`Connected to @${tiktokUsername}`);
+  // signApiKey: "optional kalau nak lebih stabil"
+})
+.then(live => {
+  console.log(`Connected to @${tiktokUsername} live`);
 
   live.on('chat', (data) => {
     const event = {
@@ -39,7 +39,7 @@ tiktokLiveConnector.connect(tiktokUsername, {
         comment: data.comment
       }
     };
-    // Broadcast ke semua overlay
+
     wss.clients.forEach(client => {
       if (client.readyState === client.OPEN) {
         client.send(JSON.stringify(event));
@@ -47,6 +47,7 @@ tiktokLiveConnector.connect(tiktokUsername, {
     });
   });
 
-}).catch(err => {
-  console.error('Failed to connect', err);
+})
+.catch(err => {
+  console.error('Gagal connect TikTok Live:', err);
 });
