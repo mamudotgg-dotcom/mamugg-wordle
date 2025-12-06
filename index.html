@@ -790,12 +790,12 @@
 
         let websocket = null;
         function connect() {
-            if (websocket) return;
-            const wsUrl = location.origin.replace('http', 'ws');
-websocket = new WebSocket(wsUrl);
+            const wsUrl = location.origin.replace(/^http/, 'ws');
+            websocket = new WebSocket(wsUrl);
+
             websocket.onopen = () => app.updateStatus("Connected");
-            websocket.onclose = () => { app.updateStatus("Disconnected"); websocket = null; setTimeout(connect, 1000); };
-            websocket.onerror = () => { app.updateStatus("Connection Failed"); websocket = null; setTimeout(connect, 1000); };
+            websocket.onclose = () => { app.updateStatus("Disconnected"); setTimeout(connect, 2000); };
+            websocket.onerror = () => app.updateStatus("Connection Error");
             websocket.onmessage = (e) => app.addEvent(JSON.parse(e.data));
         }
         window.addEventListener('load', connect);
