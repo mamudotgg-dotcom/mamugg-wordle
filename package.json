@@ -1,5 +1,5 @@
 {
-  "name": "mamu-wordle-tiktok",
+  "name": "mamu-wordle",
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
