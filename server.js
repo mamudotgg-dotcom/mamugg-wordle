@@ -1,53 +1,50 @@
 const express = require('express');
 const { WebSocketServer } = require('ws');
-const tiktokLiveConnector = require('@tiktoklive/node');
-const path = require('path');          // ← tambah ni
+const tiktokLive = require('@tiktoklive/node');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// ini 3 line WAJIB untuk Railway
-app.use(express.static(path.join(__dirname)));           // serve semua file dalam folder
-app.get('*', (req, res) => {                             // kalau tak jumpa route lain
-  res.sendFile(path.join(__dirname, 'index.html'));        // hantar index.html
+// Serve static files (WAJIB untuk Railway)
+app.use(express.static(__dirname));
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-const server = app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
+const server = app.listen(PORT, () => console.log(`Server jalan port ${PORT}`));
 const wss = new WebSocketServer({ server });
 
-// === TIKTOK LIVE CONNECT ===
-const tiktokUsername = "yoyo_savagemike";   // ← pastikan betul macam ni
+// GANTI DENGAN USERNAME TIKTOK KAU (tanpa @)
+const TIKTOK_USERNAME = "yoyo_savagemike";
 
-tiktokLiveConnector.connect(tiktokUsername, {
+tiktokLive.connect(TIKTOK_USERNAME, {
   processInitialData: false,
   enableExtendedGiftInfo: true,
-  // signApiKey: "optional kalau nak lebih stabil"
-})
-.then(live => {
-  console.log(`Connected to @${tiktokUsername} live`);
+  timeout: 10000
+}).then(live => {
+  console.log(`Connected to @${TIKTOK_USERNAME}`);
 
-  live.on('chat', (data) => {
-    const event = {
+  live.on('chat', data => {
+    const payload = {
       event: 'chat',
       data: {
         uniqueId: data.uniqueId,
         nickname: data.nickname,
-        profilePictureUrl: data.profilePictureUrl,
+        profilePictureUrl: data.profilePictureUrl || '',
         comment: data.comment
       }
     };
 
     wss.clients.forEach(client => {
       if (client.readyState === client.OPEN) {
-        client.send(JSON.stringify(event));
+        client.send(JSON.stringify(payload));
       }
     });
   });
 
-})
-.catch(err => {
-  console.error('Gagal connect TikTok Live:', err);
+}).catch(err => {
+  console.error('TikTok connect gagal:', err);
+  process.exit(1);
 });
