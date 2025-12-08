@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall of Fame - Juara Bulanan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 50px 20px;
+        }
+        .container { max-width: 1300px; margin: 0 auto; text-align: center; }
+        h1 {
+            font-size: 4.5rem;
+            background: linear-gradient(90deg, #ffd700, #ffea00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .subtitle { font-size: 1.4rem; color: #aaa; margin-bottom: 50px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            justify-content: center;
+        }
+        .card {
+            background: rgba(255,255,255,0.06);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.4s;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .card:hover {
+            transform: translateY(-15px);
+            border-color: #ffd700;
+            box-shadow: 0 25px 50px rgba(255,215,0,0.35);
+        }
+
+        /* Kunci utama: crown jadi anak avatar */
+        .avatar-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-top: 40px;
+        }
+        .avatar {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 8px solid #ffd700;
+            box-shadow: 0 0 40px rgba(255,215,0,0.7);
+        }
+        .crown {
+            position: absolute;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: auto;
+            pointer-events: none;
+            filter: drop-shadow(0 5px 10px rgba(0,0,0,0.6));
+            z-index: 10;
+        }
+
+        .info {
+            padding: 30px 20px 35px;
+        }
+        .nickname {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        .game {
+            font-size: 1.2rem;
+            color: #00ffea;
+            margin-bottom: 15px;
+        }
+        .month {
+            background: linear-gradient(90deg, #ffd700, #ffea00);
+            color: #000;
+            font-weight: 700;
+            padding: 12px 32px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        footer { margin-top: 100px; color: #777; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>MaMu.GG Hall of Fame</h1>
+    <p class="subtitle">Juara Bulanan Game Interaktif MaMu.GG</p>
+
+    <div class="grid">
+
+        <!-- COPY-PASTE BLOK NI SAJA BILA NAK TAMBAH PEMENANG -->
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/7c4a6fc9721349ad9f0e8be5c4f4894c~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=9c694fe3&x-expires=1765357200&x-signature=SEta9%2FyfeWElIC3J3a8DKu8Q%2BSY%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my" alt="bubu972x" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">◉ɮ𝓊Ᏸ𝓊 ✶彡</div>
+                <div class="game">Pengetahuan AM (OBJEKTIF)</div>
+                <div class="month">SEPTEMBER 2025</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/fac477e9a6098266574f990716b0a5aa~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=1bad6220&x-expires=1765357200&x-signature=q7zUetdoJlVIhWMqPQyxb0FaGcs%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my" alt="tiw4michu" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">tiw4michu</div>
+                <div class="game">Teka Perkataan</div>
+                <div class="month">SEPTEMBER 2025</div>
+            </div>
+        </div>
+
+            <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/e4cef867f60cd13748846cfd0b946fa0~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=f04d70eb&x-expires=1765357200&x-signature=qcZji%2F7WNQXxb3DQsBFUsWmz8gw%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my" alt="azerrr23" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">azerrr23</div>
+                <div class="game">Matematik</div>
+                <div class="month">SEPTEMBER 2025</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/15d56e20761deb1404dce1270de5b99a~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=1f1e3eb7&x-expires=1765357200&x-signature=KKOybnv2BOThQLMlCC%2BRClydsa8%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my" alt="sangkeju_" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">𝓚𝓪𝓴𝓒𝓱𝓮𝓮𝓼𝓮 🧀</div>
+                <div class="game">Pokémon Hunt</div>
+                <div class="month">SEPTEMBER 2025</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/4f62f5790375a85884efc47256f910c1~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=e5ba28e1&x-expires=1765357200&x-signature=idJ6yHdbnGHUPCFG%2FnhBYU2fvlI%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my" alt="glofishtetraa" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">Glofish</div>
+                <div class="game">Teka Perkataan</div>
+                <div class="month">OCTOBER 2025</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p16-sign-sg.tiktokcdn.com/tos-alisg-avt-0068/fc5b6559371419608bac80876968654b~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=29ecb1d7&x-expires=1765357200&x-signature=0b9iykbuCuWTergYsV%2Fd90TInI4%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my3" alt="fahmifauzi_109" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">fahmi</div>
+                <div class="game">Wordle</div>
+                <div class="month">OCTOBER 2025</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://p19-common-sign-useastred.tiktokcdn-eu.com/tos-useast2a-avt-0068-giso/8202bc3767be74316c0e90154a394b50~tplv-tiktokx-cropcenter:1080:1080.jpeg?dr=14579&refresh_token=0fa79548&x-expires=1765357200&x-signature=l1gQdtzf1m76p3vhg7rGpjjrQ3U%3D&t=4d5b0474&ps=13740610&shp=a5d48078&shcp=81f88b70&idc=my3" alt="KhayZara" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">KhayZara</div>
+                <div class="game">Wordle</div>
+                <div class="month">NOVEMBER 2025</div>
+            </div>
+        </div>
+
+        <!-- Tambah lagi di sini bila ada juara baru -->
+        <!-- Contoh kalau nak guna gambar sebenar player: -->
+        <!--
+        <div class="card">
+            <div class="avatar-wrapper">
+                <img src="https://i.imgur.com/gambar-player-kau.jpg" alt="Ali" class="avatar">
+                <img src="https://i.imgur.com/jZVAoju.png" alt="Crown" class="crown">
+            </div>
+            <div class="info">
+                <div class="nickname">ThunderAli</div>
+                <div class="game">Arena Legends</div>
+                <div class="month">Januari 2026</div>
+            </div>
+        </div>
+        -->
+
+    </div>
+
+    <footer>
+        © 2025 Game Kamu • Semua juara dapat mahkota emas!
+    </footer>
+</div>
+
+</body>
+</html>
